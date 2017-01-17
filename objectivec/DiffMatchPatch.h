@@ -30,9 +30,9 @@
 
 /*
  * The data structure representing a diff is an NSMutableArray of Diff objects:
- * {Diff(Operation.DIFF_DELETE, "Hello"),
- *  Diff(Operation.DIFF_INSERT, "Goodbye"),
- *  Diff(Operation.DIFF_EQUAL, " world.")}
+ * {Diff(DMPOperation.DIFF_DELETE, "Hello"),
+ *  Diff(DMPOperation.DIFF_INSERT, "Goodbye"),
+ *  Diff(DMPOperation.DIFF_EQUAL, " world.")}
  * which means: delete "Hello", add "Goodbye" and keep " world."
  */
 
@@ -40,30 +40,30 @@ typedef enum {
   DIFF_DELETE = 1,
   DIFF_INSERT = 2,
   DIFF_EQUAL = 3
-} Operation;
+} DMPOperation;
 
 
 /*
  * Class representing one diff operation.
  */
-@interface Diff : NSObject <NSCopying> {
-  Operation operation;  // One of: DIFF_INSERT, DIFF_DELETE or DIFF_EQUAL.
+@interface DMPDiff : NSObject <NSCopying> {
+  DMPOperation operation;  // One of: DIFF_INSERT, DIFF_DELETE or DIFF_EQUAL.
   NSString *text;      // The text associated with this diff operation.
 }
 
-@property (nonatomic, assign) Operation operation;
+@property (nonatomic, assign) DMPOperation operation;
 @property (nonatomic, copy) NSString *text;
 
-+ (id)diffWithOperation:(Operation)anOperation andText:(NSString *)aText;
++ (id)diffWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
 
-- (id)initWithOperation:(Operation)anOperation andText:(NSString *)aText;
+- (id)initWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
 
 @end
 
 /*
  * Class representing one patch operation.
  */
-@interface Patch : NSObject <NSCopying> {
+@interface DMPPatch : NSObject <NSCopying> {
   NSMutableArray *diffs;
   NSUInteger start1;
   NSUInteger start2;
@@ -170,6 +170,6 @@ typedef enum {
 - (NSUInteger)match_bitapOfText:(NSString *)text andPattern:(NSString *)pattern near:(NSUInteger)loc;
 - (double)match_bitapScoreForErrorCount:(NSUInteger)e location:(NSUInteger)x near:(NSUInteger)loc pattern:(NSString *)pattern;
 
-- (void)patch_addContextToPatch:(Patch *)patch sourceText:(NSString *)text;
+- (void)patch_addContextToPatch:(DMPPatch *)patch sourceText:(NSString *)text;
 
 @end
