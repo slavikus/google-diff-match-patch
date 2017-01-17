@@ -1,9 +1,9 @@
 #include "Version.xcconfig"
 
-SDKROOT = macosx10.5
+SDKROOT = macosx
 PREBINDING = NO
 ARCHS = i386 x86_64
-//ARCHS = ppc i386 x86_64 // PPC works, but fails the timing tests under Rosetta
+MACOSX_DEPLOYMENT_TARGET = 10.9
 
 GCC_VERSION = com.apple.compilers.llvm.clang.1_0
 GCC_C_LANGUAGE_STANDARD = gnu99
