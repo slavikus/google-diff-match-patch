@@ -22,6 +22,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /*
  * Functions for diff, match and patch.
  * Computes the difference between two texts to create a patch.
@@ -30,33 +32,33 @@
 
 /*
  * The data structure representing a diff is an NSMutableArray of Diff objects:
- * {Diff(DMPOperation.DIFF_DELETE, "Hello"),
- *  Diff(DMPOperation.DIFF_INSERT, "Goodbye"),
- *  Diff(DMPOperation.DIFF_EQUAL, " world.")}
+ * {Diff(DMPOperation.DMPOperationDelete, "Hello"),
+ *  Diff(DMPOperation.DMPOperationInsert, "Goodbye"),
+ *  Diff(DMPOperation.DMPOperationEqual, " world.")}
  * which means: delete "Hello", add "Goodbye" and keep " world."
  */
 
-typedef enum {
-  DIFF_DELETE = 1,
-  DIFF_INSERT = 2,
-  DIFF_EQUAL = 3
-} DMPOperation;
+typedef NS_OPTIONS(NSInteger, DMPOperation) {
+  DMPOperationDelete = 1,
+  DMPOperationInsert = 2,
+  DMPOperationEqual = 3
+};
 
 
 /*
  * Class representing one diff operation.
  */
 @interface DMPDiff : NSObject <NSCopying> {
-  DMPOperation operation;  // One of: DIFF_INSERT, DIFF_DELETE or DIFF_EQUAL.
+  DMPOperation operation;  // One of: DMPOperationInsert, DMPOperationDelete or DMPOperationEqual.
   NSString *text;      // The text associated with this diff operation.
 }
 
 @property (nonatomic, assign) DMPOperation operation;
-@property (nonatomic, copy) NSString *text;
+@property (nonatomic, nullable, copy) NSString *text;
 
-+ (id)diffWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
++ (instancetype)diffWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
 
-- (id)initWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
+- (instancetype)initWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
 
 @end
 
@@ -64,14 +66,14 @@ typedef enum {
  * Class representing one patch operation.
  */
 @interface DMPPatch : NSObject <NSCopying> {
-  NSMutableArray *diffs;
+  NSMutableArray<DMPDiff *> *diffs;
   NSUInteger start1;
   NSUInteger start2;
   NSUInteger length1;
   NSUInteger length2;
 }
 
-@property (nonatomic, retain) NSMutableArray *diffs;
+@property (nonatomic, nullable, retain) NSMutableArray<DMPDiff *> *diffs;
 @property (nonatomic, assign) NSUInteger start1;
 @property (nonatomic, assign) NSUInteger start2;
 @property (nonatomic, assign) NSUInteger length1;
@@ -119,35 +121,35 @@ typedef enum {
 @property (nonatomic, assign) float Patch_DeleteThreshold;
 @property (nonatomic, assign) uint16_t Patch_Margin;
 
-- (NSMutableArray *)diff_mainOfOldString:(NSString *)text1 andNewString:(NSString *)text2;
-- (NSMutableArray *)diff_mainOfOldString:(NSString *)text1 andNewString:(NSString *)text2 checkLines:(BOOL)checklines;
+- (nullable NSMutableArray<DMPDiff *> *)diff_mainOfOldString:(NSString *)text1 andNewString:(NSString *)text2;
+- (nullable NSMutableArray<DMPDiff *> *)diff_mainOfOldString:(NSString *)text1 andNewString:(NSString *)text2 checkLines:(BOOL)checklines;
 - (NSUInteger)diff_commonPrefixOfFirstString:(NSString *)text1 andSecondString:(NSString *)text2;
 - (NSUInteger)diff_commonSuffixOfFirstString:(NSString *)text1 andSecondString:(NSString *)text2;
-- (void)diff_cleanupSemantic:(NSMutableArray *)diffs;
-- (void)diff_cleanupSemanticLossless:(NSMutableArray *)diffs;
-- (void)diff_cleanupEfficiency:(NSMutableArray *)diffs;
-- (void)diff_cleanupMerge:(NSMutableArray *)diffs;
-- (NSUInteger)diff_xIndexIn:(NSMutableArray *)diffs location:(NSUInteger) loc;
-- (NSString *)diff_prettyHtml:(NSMutableArray *)diffs;
-- (NSString *)diff_text1:(NSMutableArray *)diffs;
-- (NSString *)diff_text2:(NSMutableArray *)diffs;
-- (NSUInteger)diff_levenshtein:(NSMutableArray *)diffs;
-- (NSString *)diff_toDelta:(NSMutableArray *)diffs;
-- (NSMutableArray *)diff_fromDeltaWithText:(NSString *)text1 andDelta:(NSString *)delta error:(NSError **)error;
+- (void)diff_cleanupSemantic:(NSMutableArray<DMPDiff *> *)diffs;
+- (void)diff_cleanupSemanticLossless:(NSMutableArray<DMPDiff *> *)diffs;
+- (void)diff_cleanupEfficiency:(NSMutableArray<DMPDiff *> *)diffs;
+- (void)diff_cleanupMerge:(NSMutableArray<DMPDiff *> *)diffs;
+- (NSUInteger)diff_xIndexIn:(NSMutableArray<DMPDiff *> *)diffs location:(NSUInteger) loc;
+- (NSString *)diff_prettyHtml:(NSMutableArray<DMPDiff *> *)diffs;
+- (NSString *)diff_text1:(NSMutableArray<DMPDiff *> *)diffs;
+- (NSString *)diff_text2:(NSMutableArray<DMPDiff *> *)diffs;
+- (NSUInteger)diff_levenshtein:(NSMutableArray<DMPDiff *> *)diffs;
+- (NSString *)diff_toDelta:(NSMutableArray<DMPDiff *> *)diffs;
+- (NSMutableArray<DMPDiff *> *)diff_fromDeltaWithText:(NSString *)text1 andDelta:(NSString *)delta error:(NSError **)error;
 
 - (NSUInteger)match_mainForText:(NSString *)text pattern:(NSString *)pattern near:(NSUInteger)loc;
-- (NSMutableDictionary *)match_alphabet:(NSString *)pattern;
+- (NSMutableDictionary<NSString *, NSNumber *> *)match_alphabet:(NSString *)pattern;
 
-- (NSMutableArray *)patch_makeFromOldString:(NSString *)text1 andNewString:(NSString *)text2;
-- (NSMutableArray *)patch_makeFromDiffs:(NSMutableArray *)diffs;
-- (NSMutableArray *)patch_makeFromOldString:(NSString *)text1 newString:(NSString *)text2 diffs:(NSMutableArray *)diffs;
-- (NSMutableArray *)patch_makeFromOldString:(NSString *)text1 andDiffs:(NSMutableArray *)diffs;
-- (NSMutableArray *)patch_deepCopy:(NSArray *)patches; // Copy rule applies!
-- (NSArray *)patch_apply:(NSArray *)sourcePatches toString:(NSString *)text;
-- (NSString *)patch_addPadding:(NSMutableArray *)patches;
-- (void)patch_splitMax:(NSMutableArray *)patches;
-- (NSString *)patch_toText:(NSMutableArray *)patches;
-- (NSMutableArray *)patch_fromText:(NSString *)textline error:(NSError **)error;
+- (nullable NSMutableArray<DMPPatch *> *)patch_makeFromOldString:(NSString *)text1 andNewString:(NSString *)text2;
+- (nullable NSMutableArray<DMPPatch *> *)patch_makeFromDiffs:(NSMutableArray<DMPDiff *> *)diffs;
+- (nullable NSMutableArray<DMPPatch *> *)patch_makeFromOldString:(NSString *)text1 newString:(NSString *)text2 diffs:(NSMutableArray<DMPDiff *> *)diffs;
+- (nullable NSMutableArray<DMPPatch *> *)patch_makeFromOldString:(NSString *)text1 andDiffs:(NSMutableArray<DMPDiff *> *)diffs;
+- (NSMutableArray<DMPPatch *> *)patch_deepCopy:(NSArray<DMPPatch *> *)patches; // Copy rule applies!
+- (NSArray *)patch_apply:(NSArray<DMPPatch *> *)sourcePatches toString:(NSString *)text;
+- (NSString *)patch_addPadding:(NSMutableArray<DMPPatch *> *)patches;
+- (void)patch_splitMax:(NSMutableArray<DMPPatch *> *)patches;
+- (NSString *)patch_toText:(NSMutableArray<DMPPatch *> *)patches;
+- (NSMutableArray<DMPPatch *> *)patch_fromText:(NSString *)textline error:(NSError **)error;
 
 @end
 
@@ -173,3 +175,5 @@ typedef enum {
 - (void)patch_addContextToPatch:(DMPPatch *)patch sourceText:(NSString *)text;
 
 @end
+
+NS_ASSUME_NONNULL_END
